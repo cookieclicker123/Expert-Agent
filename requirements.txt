@@ -5,3 +5,4 @@ ollama
 sentence-transformers
 sentencepiece
 langchain-community
+langchain-ollama
