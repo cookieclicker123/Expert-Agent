@@ -1,9 +1,8 @@
-import os
 from langchain_community.vectorstores import FAISS
 from langchain_huggingface import HuggingFaceEmbeddings
 from langchain.prompts import PromptTemplate
 from langchain.chains import RetrievalQA
-from langchain_community.llms import Ollama
+from langchain_ollama import OllamaLLM
 
 
 # Load FAISS index
@@ -20,7 +19,7 @@ def create_rag_system(index_path, embedding_model='sentence-transformers/all-Min
     vector_store = load_faiss_index(index_path, embedding_model)
 
     # Initialize the Ollama model (Llama3.1)
-    llm = Ollama(model=model_name)
+    llm = OllamaLLM(model=model_name)
 
     # Create a more detailed prompt template
     prompt_template = """
@@ -70,8 +69,8 @@ def create_rag_system(index_path, embedding_model='sentence-transformers/all-Min
 
 # Function to run the RAG system with a user question
 def get_answer(question, qa_chain):
-    answer = qa_chain.run(question)
-    return answer
+    answer = qa_chain.invoke({"query": question})
+    return answer["result"]
 
 
 if __name__ == "__main__":
