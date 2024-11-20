@@ -27,18 +27,21 @@ def create_rag_system(index_path, embedding_model='sentence-transformers/all-Min
     You are an expert financial analyst with access to the following context from various financial documents. 
     Your job is to provide detailed, accurate analysis using only the information in the context below.
 
-    Context:
-    {context}
+    Context: {context}
 
     Question: {question}
 
     Instructions:
-    1. If analyzing correlations or relationships, explicitly state which documents you're drawing from
-    2. If information is missing from the context, clearly state what's missing
-    3. When citing numbers or metrics, specify their source and timeframe
-    4. Organize complex answers with bullet points or numbered lists
+    1. Base your analysis strictly on the provided context
+    2. When citing information, specify the source document and timeframe
+    3. If analyzing relationships or trends, explicitly state which documents support your analysis
+    4. For any metrics or data points, clearly indicate their source and date
+    5. If certain information appears outdated or if you need additional context, note this in your response
 
-    Answer:
+    Answer in this format:
+    Sources Used: [List the specific documents and their dates]
+    Analysis: [Your detailed answer based on available context]
+    Additional Context Needed: [Optional - only if relevant information appears to be missing]
     """
 
     # Create a template for formatting the input for the model
@@ -54,9 +57,9 @@ def create_rag_system(index_path, embedding_model='sentence-transformers/all-Min
         retriever=vector_store.as_retriever(
             search_type="mmr",
             search_kwargs={
-                "k": 6,
-                "fetch_k": 10,
-                "lambda_mult": 0.7
+                "k": 12,
+                "fetch_k": 20,
+                "lambda_mult": 0.5
             }
         ),
         chain_type_kwargs={"prompt": prompt}

@@ -1,5 +1,6 @@
 import os
 import fitz  # PyMuPDF for reading PDFs
+import json
 
 
 # Function to convert PDF to text and save as .txt files
@@ -21,9 +22,26 @@ def convert_pdfs_to_text(pdf_folder, text_folder):
                 for page in doc:
                     text += page.get_text()
 
-            # Save the extracted text to a .txt file
-            with open(text_file_path, "w", encoding="utf-8") as text_file:
-                text_file.write(text)
+            # Add metadata extraction
+            metadata = {
+                "title": doc.metadata.get("title", ""),
+                "author": doc.metadata.get("author", ""),
+                "creation_date": doc.metadata.get("creationDate", ""),
+                "source_file": file_name
+            }
+
+            # Add better text cleaning
+            text = text.replace('\n\n', ' ').replace('  ', ' ')
+
+            # Save both text and metadata
+            output = {
+                "text": text,
+                "metadata": metadata
+            }
+
+            # Save as JSON to preserve metadata
+            with open(text_file_path.replace('.txt', '.json'), "w", encoding="utf-8") as f:
+                json.dump(output, f)
             print(f"Converted {file_name} to {text_file_name}")
 
 
