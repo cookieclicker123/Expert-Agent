@@ -105,15 +105,29 @@ This repository is your gateway to exploring RAG systems, creating domain-specif
     ollama pull llama3.2
     ```
 
-## Make .env file for Vantage API key
+## Make .env file for API Keys
 
-Visit https://www.alphavantage.co/support/#api-key and sign up for a free API key.
-Be weary that rate limits on free accounts are low; 25 requests per day. I would advise signing up for a paid account if you plan on using this tool heavily.
+### Alpha Vantage API (Financial Data)
+1. Visit https://www.alphavantage.co/support/#api-key
+2. Sign up for a free account
+3. Navigate to your Dashboard
+4. Copy your API key
 
-Create a `.env` file in the root folder and add your Vantage API key:
+Note: Rate limits on free accounts are low (25 requests per day). Consider a paid account if you plan on using this tool heavily.
+
+### Serper API (Web Search)
+1. Visit https://serper.dev/
+2. Sign up for an account
+3. Navigate to Dashboard
+4. Copy your API key
+
+Note: Serper offers 2,500 free searches when you sign up, which is generally sufficient for testing and personal use. For production environments, consider their paid plans for higher limits.
+
+Create a `.env` file in the root folder and add your API keys:
 
 ```bash
 ALPHA_VANTAGE_API_KEY=<your_vantage_api_key>
+SERPER_API_KEY=<your_serper_api_key>
 ```
 
 ## PDF to Text Conversion
