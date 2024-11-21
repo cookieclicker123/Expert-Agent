@@ -42,11 +42,41 @@ By leveraging both local processing (LLaMA 3.2) and strategic API integrations (
 
 ## Features
 
-- **PDF-to-Text Processing**: Converts PDF documents into text for seamless integration into the retrieval system.
-- **Efficient Document Indexing**: Uses **FAISS** to create a robust index for fast and accurate document retrieval.
-- **LLaMA 3.2 Integration**: Employs the lightweight LLaMA 3.2 model via **Ollama**, allowing for **context-aware question answering** based on retrieved content.
-- **Real-Time Querying**: Enables users to interact directly with the system via the terminal, making it ideal for offline scenarios.
-- **Local-First Design**: All processing is done locally, ensuring privacy and security.
+- **Multi-Agent Architecture**
+  - PDF Agent for knowledge base and educational content
+  - Web Agent for real-time market intelligence
+  - Finance Agent for live market data analysis
+  - Smart agent selection based on query context
+
+- **Advanced RAG Implementation**
+  - PDF-to-Text Processing with intelligent chunking
+  - FAISS indexing for efficient document retrieval
+  - Context-aware document synthesis
+  - Seamless integration of multiple knowledge sources
+
+- **Real-Time Market Intelligence**
+  - Live web scraping for current market news
+  - Real-time stock data and metrics
+  - Analyst sentiment tracking
+  - Industry trend analysis
+
+- **LLaMA 3.2 Integration**
+  - Local inference via Ollama
+  - Context-aware response generation
+  - Natural language understanding
+  - Efficient prompt handling
+
+- **Privacy and Security**
+  - Local-first design for sensitive data
+  - Controlled API usage
+  - Secure document processing
+  - Private knowledge base management
+
+- **Interactive Experience**
+  - Real-time terminal interface
+  - Natural language querying
+  - Multi-agent response synthesis
+  - Comprehensive financial analysis
 
 ---
 
