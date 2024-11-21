@@ -1,20 +1,42 @@
-# RAG-Based Application with LLaMA 3.2 and Ollama
+# Expert Financial Advisory System with Multi-Agent Architecture
 
-![Ollama](images/ollama.png "RAG System Overview")
+![Ollama](images/ollama.png "Multi-Agent System Overview")
 
-This repository demonstrates a **Retrieval-Augmented Generation (RAG)** application built using **LLaMA 3.2** via **Ollama**. It combines efficient document retrieval with the power of a lightweight, open-source language model to create a **context-aware, local AI system**. The application is specifically designed to work offline, turning static PDFs into a dynamic knowledge base capable of answering real-world questions.
+This repository demonstrates a sophisticated **Multi-Agent Financial Advisory System** built on a foundation of **RAG (Retrieval-Augmented Generation)** technology. It combines:
+- Local document analysis (PDF Agent)
+- Real-time web intelligence (Web Agent)
+- Live market data processing (Finance Agent)
+
+The system leverages **LLaMA 3.2** via **Ollama** for local inference, creating a powerful, context-aware financial advisory tool that synthesizes information from multiple sources.
 
 ---
 
 ## What Is This Repository?
 
-This project provides a framework to transform collections of documents into a **powerful, AI-driven retrieval system**. Using a combination of LLaMA 3.2's generative capabilities and FAISS for document indexing, this repository empowers users to:
+This project provides a framework for an AI-driven financial advisory system that combines three specialized agents:
 
-- **Query any set of documents** in real time.
-- Retrieve and generate detailed, contextually relevant answers from your knowledge base.
-- Build specialized applications for domain-specific knowledge, like financial advising, research assistance, or enterprise AI tools.
+1. **PDF Agent (Knowledge Base)**
+   - Processes financial documents, research papers, and trading guides
+   - Provides educational content and strategic advice
+   - Uses FAISS for efficient document retrieval
 
-By leveraging Meta’s open-source LLaMA 3.2 model, this repository democratizes AI for **developers, researchers, and enterprises**, enabling local, secure, and cost-effective solutions without relying on large proprietary systems or internet connectivity.
+2. **Web Agent (Real-Time Intelligence)**
+   - Gathers current market news and analyst opinions
+   - Tracks industry trends and developments
+   - Provides real-time context for decision-making
+
+3. **Finance Agent (Market Data)**
+   - Monitors live stock prices and market metrics
+   - Analyzes financial ratios and performance indicators
+   - Tracks market movements and trading volumes
+
+The system excels at:
+- Synthesizing information from multiple sources
+- Providing context-aware financial advice
+- Combining historical knowledge with real-time data
+- Offering educational content alongside market analysis
+
+By leveraging both local processing (LLaMA 3.2) and strategic API integrations (Serper, Alpha Vantage), this system provides comprehensive financial insights while maintaining data privacy and cost efficiency.
 
 ---
 
