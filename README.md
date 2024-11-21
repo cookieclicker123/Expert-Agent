@@ -105,6 +105,17 @@ This repository is your gateway to exploring RAG systems, creating domain-specif
     ollama pull llama3.2
     ```
 
+## Make .env file for Vantage API key
+
+Visit https://www.alphavantage.co/support/#api-key and sign up for a free API key.
+Be weary that rate limits on free accounts are low; 25 requests per day. I would advise signing up for a paid account if you plan on using this tool heavily.
+
+Create a `.env` file in the root folder and add your Vantage API key:
+
+```bash
+ALPHA_VANTAGE_API_KEY=<your_vantage_api_key>
+```
+
 ## PDF to Text Conversion
 
 To convert your PDFs into text files, run the `pdf_to_text.py` script. Make sure your PDF files are placed in the `Data/` folder.
