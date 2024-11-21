@@ -1,3 +1,5 @@
 .venv
-DataTxt
-DataIndex
+processed
+indexes
+*.pyc
+*.pycache__
