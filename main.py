@@ -1,141 +1,73 @@
-from langchain_community.vectorstores import FAISS
-from langchain_huggingface import HuggingFaceEmbeddings
-from langchain.prompts import PromptTemplate
-from langchain.chains import RetrievalQA
-from langchain_ollama import OllamaLLM
-from langchain.callbacks.base import BaseCallbackHandler
-import sys
+from agents.meta_agent import MetaAgent
+from agents.pdf_agent import PDFAgent
+import json
 
-# Custom streaming callback handler
-class CustomStreamingHandler(BaseCallbackHandler):
+class ExpertSystem:
     def __init__(self):
-        self.text = ""
+        print("Loading Expert System...")
+        # Initialize meta agent
+        self.meta_agent = MetaAgent()
         
-    def on_llm_new_token(self, token: str, **kwargs) -> None:
-        """Run on new LLM token. Only available when streaming is enabled."""
-        sys.stdout.write(token)
-        sys.stdout.flush()
-        self.text += token
-
-
-# Load FAISS index
-def load_faiss_index(index_path, embedding_model):
-    # Load the FAISS index using the same embedding model
-    embeddings = HuggingFaceEmbeddings(model_name=embedding_model)
-    vector_store = FAISS.load_local(index_path, embeddings, allow_dangerous_deserialization=True)
-    return vector_store
-
-
-# Create the RAG system using FAISS and Ollama (Llama 3.1)
-def create_rag_system(index_path, embedding_model='sentence-transformers/all-MiniLM-L6-v2', model_name="llama3.2"):
-    # Load the FAISS index
-    vector_store = load_faiss_index(index_path, embedding_model)
-
-    # Initialize Ollama without a streaming handler
-    llm = OllamaLLM(model=model_name)
-
-    # Create a more detailed prompt template
-    prompt_template = """
-    You are an expert financial analyst and advisor with exceptional ability to synthesize information from multiple sources and draw sophisticated conclusions. Your strength lies in combining factual evidence with expert analysis.
-
-    If context is provided, you have access to excerpts from multiple financial documents and sources:
-    {context}
-
-    Question: {question}
-
-    Follow these analytical principles:
-
-    1. INFORMATION SYNTHESIS
-    - Identify key data points across all provided documents
-    - Look for patterns, correlations, or contradictions between different sources
-    - Understand the temporal relationship between different pieces of information
-    - Recognize when different sources are describing the same phenomenon from different angles
-
-    2. ANALYTICAL FOUNDATION
-    - Ground your initial analysis in concrete facts from the sources
-    - Note where different sources reinforce or challenge each other
-    - Identify gaps or limitations in the available information
-    - Consider the context and timeframe of each piece of information
-
-    3. REASONED EXPANSION
-    - Build logical bridges between different pieces of information
-    - Draw conclusions that extend beyond but remain anchored to the evidence
-    - Use your expertise to interpret implications
-    - Develop insights that wouldn't be apparent from any single source alone
-
-    4. HOLISTIC INTEGRATION
-    - Combine document-based evidence with your market expertise
-    - Consider how different pieces of information interact with each other
-    - Identify broader patterns or trends suggested by the combined information
-    - Develop a comprehensive view that's greater than the sum of its parts
-
-    Remember:
-    - Not every question requires external context - use your judgment
-    - When using sources, cite them specifically but don't be constrained by them
-    - Your role is to provide insight, not just information
-    - Be explicit about your reasoning process and any assumptions
-    - Distinguish between direct evidence and reasoned extrapolation
-
-    Structure your response to best serve the analysis, but always make clear:
-    - What information you're drawing from
-    - How different sources connect
-    - Your reasoning process
-    - The confidence level of your conclusions
-    """
-
-    # Create a template for formatting the input for the model
-    prompt = PromptTemplate(
-        input_variables=["context", "question"],
-        template=prompt_template
-    )
-
-    # Create a RetrievalQA chain that combines the vector store with the model
-    qa_chain = RetrievalQA.from_chain_type(
-        llm=llm,
-        chain_type="stuff",
-        retriever=vector_store.as_retriever(
-            search_type="mmr",
-            search_kwargs={
-                "k": 12,
-                "fetch_k": 20,
-                "lambda_mult": 0.5
+        # Initialize and register available agents
+        self._initialize_agents()
+        
+    def _initialize_agents(self):
+        """Initialize and register all available agents"""
+        print("Initializing PDF agent...")
+        pdf_agent = PDFAgent()
+        self.meta_agent.registry.register("pdf", pdf_agent)
+        
+    def process_query(self, query: str) -> str:
+        """Process a query through the meta agent"""
+        try:
+            response = self.meta_agent.process(query)
+            return self._format_response(response)
+        except Exception as e:
+            return self._format_error(str(e))
+            
+    def _format_response(self, response: str) -> str:
+        """Format the final response"""
+        try:
+            # Ensure response is valid JSON
+            json_response = json.loads(response)
+            return json.dumps(json_response, indent=2)
+        except json.JSONDecodeError:
+            return response  # Return as is if not JSON
+            
+    def _format_error(self, error_msg: str) -> str:
+        """Format error messages"""
+        return json.dumps({
+            "error": {
+                "message": error_msg,
+                "type": "system_error"
             }
-        ),
-        chain_type_kwargs={"prompt": prompt}
-    )
+        }, indent=2)
 
-    return qa_chain
-
-
-# Function to run the RAG system with a user question
-def get_answer(question, qa_chain):
-    streaming_handler = CustomStreamingHandler()
+def main():
+    print("Initializing Expert System...")
+    system = ExpertSystem()
     
-    try:
-        response = qa_chain.invoke(
-            {"query": question},
-            {"callbacks": [streaming_handler]}
-        )
-        print()  # Add newline after response
-        return streaming_handler.text
-        
-    except Exception as e:
-        print(f"\nError during streaming: {e}")
-        return ""
-
+    print("System Ready!")
+    print("Available Agents:", system.meta_agent.registry.list_agents())
+    print("\nEnter your questions (type 'exit' to quit)")
+    
+    # Main interaction loop
+    while True:
+        try:
+            query = input("\nQuery: ")
+            if query.lower() == 'exit':
+                print("Shutting down Expert Agent System...")
+                break
+                
+            response = system.process_query(query)
+            print("\nResponse:")
+            print(response)
+            
+        except KeyboardInterrupt:
+            print("\nShutting down Expert Agent System...")
+            break
+        except Exception as e:
+            print(f"\nError: {str(e)}")
 
 if __name__ == "__main__":
-    # Path to the FAISS index directory
-    index_path = "DataIndex"
-
-    # Initialize the RAG system
-    rag_system = create_rag_system(index_path)
-
-    # Get user input and generate the answer
-    while True:
-        user_question = input("Ask your question (or type 'exit' to quit): ")
-        if user_question.lower() == "exit":
-            print("Exiting the RAG system.")
-            break
-        answer = get_answer(user_question, rag_system)
-        print(f"\n[FINAL]{answer}")
+    main()
