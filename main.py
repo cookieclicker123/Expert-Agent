@@ -3,6 +3,19 @@ from langchain_huggingface import HuggingFaceEmbeddings
 from langchain.prompts import PromptTemplate
 from langchain.chains import RetrievalQA
 from langchain_ollama import OllamaLLM
+from langchain.callbacks.base import BaseCallbackHandler
+import sys
+
+# Custom streaming callback handler
+class CustomStreamingHandler(BaseCallbackHandler):
+    def __init__(self):
+        self.text = ""
+        
+    def on_llm_new_token(self, token: str, **kwargs) -> None:
+        """Run on new LLM token. Only available when streaming is enabled."""
+        sys.stdout.write(token)
+        sys.stdout.flush()
+        self.text += token
 
 
 # Load FAISS index
@@ -18,7 +31,7 @@ def create_rag_system(index_path, embedding_model='sentence-transformers/all-Min
     # Load the FAISS index
     vector_store = load_faiss_index(index_path, embedding_model)
 
-    # Initialize the Ollama model (Llama3.1)
+    # Initialize Ollama without a streaming handler
     llm = OllamaLLM(model=model_name)
 
     # Create a more detailed prompt template
@@ -69,8 +82,19 @@ def create_rag_system(index_path, embedding_model='sentence-transformers/all-Min
 
 # Function to run the RAG system with a user question
 def get_answer(question, qa_chain):
-    answer = qa_chain.invoke({"query": question})
-    return answer["result"]
+    streaming_handler = CustomStreamingHandler()
+    
+    try:
+        response = qa_chain.invoke(
+            {"query": question},
+            {"callbacks": [streaming_handler]}
+        )
+        print()  # Add newline after response
+        return streaming_handler.text
+        
+    except Exception as e:
+        print(f"\nError during streaming: {e}")
+        return ""
 
 
 if __name__ == "__main__":
@@ -87,4 +111,4 @@ if __name__ == "__main__":
             print("Exiting the RAG system.")
             break
         answer = get_answer(user_question, rag_system)
-        print(f"Answer: {answer}")
+        print(f"\n[FINAL]{answer}")
