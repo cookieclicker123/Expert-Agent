@@ -1,4 +1,9 @@
 from dataclasses import dataclass
+import os
+from dotenv import load_dotenv
+
+# Load environment variables
+load_dotenv()
 
 @dataclass
 class ModelConfig:
@@ -8,8 +13,8 @@ class ModelConfig:
 
 @dataclass
 class APIConfig:
-    serper_api_key: str = "your-serper-key"
-    yahoo_finance_api_key: str = "your-yahoo-key"
+    serper_api_key: str = os.getenv("SERPER_API_KEY")
+    alpha_vantage_key: str = os.getenv("ALPHA_VANTAGE_API_KEY")
 
 @dataclass
 class PathConfig:

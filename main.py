@@ -1,5 +1,6 @@
 from agents.meta_agent import MetaAgent
 from agents.pdf_agent import PDFAgent
+from agents.finance_agent import FinanceAgent
 import json
 
 class ExpertSystem:
@@ -15,7 +16,12 @@ class ExpertSystem:
         """Initialize and register all available agents"""
         print("Initializing PDF agent...")
         pdf_agent = PDFAgent()
+        print("Initializing Finance agent...")
+        finance_agent = FinanceAgent()
+        
+        # Register both agents
         self.meta_agent.registry.register("pdf", pdf_agent)
+        self.meta_agent.registry.register("finance", finance_agent)
         
     def process_query(self, query: str) -> str:
         """Process a query through the meta agent"""

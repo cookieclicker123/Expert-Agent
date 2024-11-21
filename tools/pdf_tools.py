@@ -19,6 +19,11 @@ class RAGSystem:
                  index_path: str = "./data/indexes",
                  embedding_model: str = 'sentence-transformers/all-MiniLM-L6-v2',
                  device: str = 'mps'):
+        # Disable logging for the transformers and FAISS
+        import logging
+        logging.getLogger('sentence_transformers').setLevel(logging.WARNING)
+        logging.getLogger('faiss').setLevel(logging.WARNING)
+        
         self.index_path = index_path
         self.embedding_model = embedding_model
         self.embeddings = HuggingFaceEmbeddings(
