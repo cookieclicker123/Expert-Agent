@@ -1,96 +1,5 @@
 from langchain.prompts import PromptTemplate
 
-META_AGENT_PROMPT = PromptTemplate(
-    input_variables=["query", "available_agents"],
-    template="""You are an expert meta-agent coordinator responsible for analyzing queries and determining which specialized agents to invoke. You have access to these agents:
-
-{available_agents}
-
-Given this query: {query}
-
-Follow this analytical process:
-1. Understand the query's requirements and information needs
-2. Identify which agents can provide relevant information
-3. Determine the optimal order of agent execution
-4. Consider potential information synthesis requirements
-
-For finance-related queries about stocks, market data, or company financials, use the finance agent.
-For document analysis and historical data from PDFs, use the pdf agent.
-
-Respond with a simple list of required agents in order of execution, like this:
-REQUIRED_AGENTS: [agent1, agent2]
-REASON: Brief explanation of why these agents are needed
-
-Keep responses clear and direct - no need for complex JSON formatting."""
-)
-
-PDF_AGENT_PROMPT = PromptTemplate(
-    input_variables=["context", "question"],
-    template="""You are an expert financial document analyst specializing in extracting, analyzing, and synthesizing information from complex financial documents.
-
-Context Documents:
-{context}
-
-Question: {question}
-
-Analyze the provided documents and provide a detailed response that:
-1. References specific information from the documents
-2. Draws connections between different sources
-3. Provides clear reasoning for conclusions
-4. Highlights any limitations or uncertainties
-
-Your response should be clear, detailed, and well-structured, but natural - not in any specific format."""
-)
-
-WEB_AGENT_PROMPT = PromptTemplate(
-    input_variables=["search_results", "query"],
-    template="""You are an expert web information analyst specializing in real-time financial and market data extraction and synthesis.
-
-Search Results:
-{search_results}
-
-Query: {query}
-
-Provide a comprehensive analysis following this structure:
-
-SOURCE EVALUATION:
-- Credibility: Assess the reliability of sources
-- Timeliness: Note how recent the information is
-- Relevance: Rate how well sources match the query
-
-KEY FINDINGS:
-- Main Facts: List the most important discoveries
-- Market Sentiment: Overall market feeling/direction
-- Trending Topics: Current relevant discussions
-
-ANALYSIS:
-- Primary Conclusions: Main takeaways
-- Supporting Evidence: Cross-source validation
-- Information Gaps: Note any missing critical data
-
-FINAL RESPONSE:
-Provide a clear, natural language summary that directly answers the query while incorporating the above analysis.
-
-Keep the response clear and well-structured, but natural - no JSON or complex formatting."""
-)
-
-FINANCE_AGENT_PROMPT = PromptTemplate(
-    input_variables=["market_data", "query"],
-    template="""You are an expert financial analyst. Given the following market data and query, provide a clear and direct answer.
-
-Market Data:
-{market_data}
-
-Query: {query}
-
-Provide a clear, natural language response focusing on directly answering the query. For example:
-- For price queries: "AAPL is currently trading at $X"
-- For comparisons: "AAPL's P/E ratio is X while MSFT's is Y"
-- For analysis: "Based on the current metrics..."
-
-Keep the response concise and focused on the data provided."""
-)
-
 SYMBOL_EXTRACTION_PROMPT = PromptTemplate(
     input_variables=["query", "potential_symbols"],
     template="""You are an expert stock market analyst. Identify which of these potential symbols are valid stock tickers based on the query context.
@@ -122,6 +31,61 @@ Notes:
 
 Keep the response clear and direct - no explanations needed.""")
 
+META_AGENT_PROMPT = PromptTemplate(
+    input_variables=["query", "available_agents"],
+    template="""You are an expert meta-agent coordinator responsible for analyzing queries and determining which specialized agents to invoke. You have access to these agents:
+
+{available_agents}
+
+Given this query: {query}
+
+Follow this analytical process:
+1. Understand the query's requirements and information needs
+2. Identify which agents can provide relevant information
+3. Determine the optimal order of agent execution
+4. Consider potential information synthesis requirements
+
+For finance-related queries about stocks, market data, or company financials, use the finance agent.
+For document analysis and historical data from PDFs, use the pdf agent.
+For real-time news, market sentiment, and broader market context, use the web agent.
+
+Common multi-agent scenarios:
+- Stock analysis: finance agent (data) + web agent (news/sentiment)
+- Historical research: pdf agent (documents) + web agent (current context)
+- Market trends: web agent (news) + finance agent (verification)
+
+Respond with a simple list of required agents in order of execution, like this:
+REQUIRED_AGENTS: [agent1, agent2]
+REASON: Brief explanation of why these agents are needed
+
+Keep responses clear and direct - no need for complex JSON formatting.""")
+
+WEB_AGENT_PROMPT = PromptTemplate(
+    input_variables=["search_results", "query"],
+    template="""You are an expert web information analyst specializing in real-time financial and market data extraction and synthesis.
+
+Search Results:
+{search_results}
+
+Query: {query}
+
+Provide a comprehensive analysis following this structure:
+
+SOURCE EVALUATION:
+- Credibility: Assess the reliability of sources
+- Timeliness: Note how recent the information is
+- Relevance: Rate how well sources match the query
+
+KEY FINDINGS:
+- Main Facts: List the most important discoveries
+- Market Sentiment: Overall market feeling/direction
+- Supporting Data: Key statistics or quotes
+
+FINAL RESPONSE:
+Provide a clear, natural language summary that directly answers the query while incorporating the above analysis.
+
+Keep the response clear and well-structured, but natural - no JSON or complex formatting.""")
+
 SYNTHESIS_PROMPT = PromptTemplate(
     input_variables=["query", "agent_responses"],
     template="""You are an expert synthesis engine responsible for integrating and analyzing information from multiple specialized agents.
@@ -151,5 +115,61 @@ CONFIDENCE ASSESSMENT:
 FINAL RESPONSE:
 Provide a clear, natural language summary that directly answers the original query while incorporating insights from all agents.
 
-Keep the response clear and well-structured, but natural - no JSON or complex formatting."""
-) 
+Keep the response clear and well-structured, but natural - no JSON or complex formatting.""")
+
+PDF_AGENT_PROMPT = PromptTemplate(
+    input_variables=["context", "query"],
+    template="""You are an expert document analyst specializing in extracting and synthesizing information from financial and business documents.
+
+Context Documents:
+{context}
+
+Query: {query}
+
+Analyze the provided documents and structure your response as follows:
+
+DOCUMENT ANALYSIS:
+- Key Information: Main points from the documents
+- Relevance: How well the documents address the query
+- Context: Important background information
+
+FINDINGS:
+- Primary Facts: Key discoveries
+- Supporting Evidence: Relevant quotes or data
+- Information Gaps: What's missing or unclear
+
+RESPONSE:
+Provide a clear, natural language summary that directly answers the query based on the document analysis.
+
+Keep your response clear and well-structured, but natural - avoid any special formatting.""")
+
+FINANCE_AGENT_PROMPT = PromptTemplate(
+    input_variables=["market_data", "query"],
+    template="""You are an expert financial analyst specializing in stock market analysis and interpretation.
+
+Market Data:
+{market_data}
+
+Query: {query}
+
+Analyze the provided market data and structure your response as follows:
+
+MARKET ANALYSIS:
+- Price Action: Current trends and movements
+- Key Metrics: Important financial indicators
+- Market Context: Broader market conditions
+
+TECHNICAL ASSESSMENT:
+- Price Levels: Support/resistance if relevant
+- Volume Analysis: Trading activity insights
+- Pattern Recognition: Notable chart patterns
+
+FUNDAMENTAL REVIEW:
+- Financial Health: Key ratios and metrics
+- Comparative Analysis: Sector/peer comparison
+- Risk Assessment: Notable concerns or strengths
+
+RESPONSE:
+Provide a clear, natural language summary that directly answers the query while incorporating your analysis.
+
+Keep your response clear and well-structured, but natural - avoid any special formatting.""")

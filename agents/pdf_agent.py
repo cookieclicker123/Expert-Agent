@@ -24,15 +24,31 @@ class PDFAgent(BaseAgent):
                     "lambda_mult": 0.5
                 }
             ),
-            chain_type_kwargs={"prompt": self.prompt}
+            chain_type_kwargs={
+                "prompt": self.prompt,
+                "verbose": True
+            }
         )
         
     def process(self, query: str) -> str:
         """Process document-based queries"""
         try:
-            # Use the QA chain directly
-            response = self.qa_chain.invoke({"query": query})
-            return response['result']  # Return plain text response
+            # Get context and format response
+            context = self.pdf_tool.query_documents(query)
+            
+            if not context:
+                return "No relevant documents found for this query."
+                
+            # Format prompt with context and query
+            formatted_response = self.prompt.format(
+                context=context,
+                query=query
+            )
+            
+            # Get LLM response
+            response = self.llm.invoke(formatted_response)
+            return response.strip() if response else "No response generated"
+            
         except Exception as e:
             return self._format_error_response(str(e))
             
