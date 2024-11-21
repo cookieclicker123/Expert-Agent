@@ -177,6 +177,63 @@ python main.py
 
 The system will prompt you to ask a question. You can type your questions in the terminal and get answers based on the documents in the FAISS index. To exit, type `exit`.
 
+## Example Queries
+
+### PDF Agent (Knowledge Base)
+Basic:
+- "What is options trading?"
+- "Explain the basics of technical analysis"
+- "What are the fundamental principles of investing?"
+
+Advanced:
+- "Give me a detailed options trading strategy for volatile markets"
+- "What are the key considerations for risk management in trading?"
+- "Explain advanced chart pattern recognition techniques"
+
+### Web Agent (Current Events)
+Basic:
+- "What's happening with chip shortages?"
+- "Latest news about AI developments"
+- "Current market trends in tech sector"
+
+Advanced:
+- "How are global supply chain issues affecting semiconductor industry?"
+- "What are analysts saying about the impact of AI on cloud computing?"
+- "Recent developments in quantum computing and their market impact"
+
+### Finance Agent (Market Data)
+Basic:
+- "What's AAPL's current price?"
+- "Show me NVDA's performance today"
+- "Get Microsoft's market cap"
+
+Advanced:
+- "Compare AAPL and MSFT's current metrics"
+- "Analyze AMD's trading volume patterns"
+- "Show Tesla's key financial ratios"
+
+### Multi-Agent Queries
+Knowledge + Current Events:
+- "How do current chip shortages compare to historical semiconductor cycles?"
+- "Explain options trading strategies considering today's market volatility"
+- "What are the implications of recent AI developments for traditional trading strategies?"
+
+Market Data + News:
+- "Why is NVDA stock moving today?"
+- "Analyze AAPL's performance with recent supply chain news"
+- "How are analyst ratings affecting MSFT's price?"
+
+Comprehensive Analysis:
+- "Give me a complete analysis of the AI chip market, including NVDA, AMD, and INTC"
+- "Analyze the impact of current market conditions on options trading strategies"
+- "What's driving the semiconductor sector this week? Include historical context and current data"
+
+### Notes:
+- Finance agent queries require Alpha Vantage API key
+- Web queries provide real-time information
+- PDF/Knowledge base responses depend on available documents
+- Multi-agent queries demonstrate system's synthesis capabilities
+
 ## Common Issues and Best Practices
 
 - **Incompatible Embeddings**: Ensure that the same embeddings model is used when creating and loading the FAISS index.
