@@ -42,52 +42,39 @@ class MetaAgent(BaseAgent):
         try:
             query_lower = query.lower()
             
-            # Web-specific terms
-            web_terms = [
-                "latest", "news", "recent", "current", "today", "update",
-                "happening", "announced", "report", "shortage", "supply",
-                "trend", "development", "analysis", "analyst", "sentiment"
+            # Educational/Knowledge terms (PDF priority)
+            knowledge_terms = [
+                "how to", "explain", "what is", "strategy", "guide",
+                "tutorial", "understand", "learn", "concept", "theory",
+                "principle", "method", "technique", "approach", "framework",
+                "process", "steps", "advanced", "basic", "intermediate"
             ]
             
-            # Finance-specific terms
-            finance_terms = [
-                "stock", "price", "market cap", "ticker", "trading",
-                "dividend", "earnings", "revenue", "profit", "eps",
-                "pe ratio", "valuation"
+            # Current events terms (Web priority)
+            current_terms = [
+                "latest", "current", "now", "today", "recent",
+                "breaking", "update", "news", "announced", "happening"
             ]
             
-            # Document-specific terms
-            doc_terms = [
-                "document", "pdf", "report", "filing", "historical",
-                "past", "previous", "old", "archive", "documentation",
-                "manual", "guide", "presentation"
+            # Market data terms (Finance priority)
+            market_terms = [
+                "price", "stock", "ticker", "trading", "market cap",
+                "volume", "dividend", "earnings", "ratio"
             ]
             
-            # Company and sector terms (these could trigger web or finance depending on context)
-            company_terms = [
-                "nvidia", "apple", "microsoft", "amd", "intel",
-                "semiconductor", "chip", "tech", "technology",
-                "ai", "artificial intelligence"
-            ]
-            
-            # First, check for explicit agent indicators
-            if any(term in query_lower for term in web_terms):
-                if any(term in query_lower for term in finance_terms):
-                    return ["web", "finance"]
-                return ["web"]
+            # Multi-agent scenarios
+            if any(term in query_lower for term in knowledge_terms):
+                if any(term in query_lower for term in current_terms):
+                    return ["pdf", "web"]  # Knowledge base first, then current context
+                return ["pdf"]  # Pure educational query
                 
-            if any(term in query_lower for term in finance_terms):
-                if any(term in query_lower for term in web_terms):
-                    return ["finance", "web"]
-                return ["finance"]
+            if any(term in query_lower for term in market_terms):
+                if any(term in query_lower for term in current_terms):
+                    return ["finance", "web"]  # Market data first, then news
+                return ["finance"]  # Pure market query
                 
-            if any(term in query_lower for term in doc_terms):
-                return ["pdf"]
-                
-            # If query contains company/sector terms but no specific agent indicators,
-            # default to web for real-time information
-            if any(term in query_lower for term in company_terms):
-                return ["web"]
+            if any(term in query_lower for term in current_terms):
+                return ["web"]  # Pure current events query
                 
             # Use LLM for complex queries
             analysis_prompt = self.prompt.format(
@@ -101,11 +88,13 @@ class MetaAgent(BaseAgent):
                 agents = [a.strip() for a in agents_str.strip("[]").split(",")]
                 return [a for a in agents if a in self.registry.list_agents()]
                 
-            # Default to web for general queries about current events/information
-            return ["web"]
+            # Default to PDF for general knowledge queries
+            return ["pdf"]
                 
         except Exception as e:
-            # Smart fallback - prefer web for general queries
+            # Smart fallback - prefer PDF for educational content
+            if any(term in query_lower for term in knowledge_terms):
+                return ["pdf"]
             return ["web"]
         
     def _synthesize_responses(self, query: str, responses: List[dict]) -> str:
