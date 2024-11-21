@@ -40,23 +40,73 @@ class MetaAgent(BaseAgent):
     def _analyze_query(self, query: str) -> List[str]:
         """Determine which agents are needed for this query"""
         try:
-            # Use the LLM to decide which agents to use
+            query_lower = query.lower()
+            
+            # Web-specific terms
+            web_terms = [
+                "latest", "news", "recent", "current", "today", "update",
+                "happening", "announced", "report", "shortage", "supply",
+                "trend", "development", "analysis", "analyst", "sentiment"
+            ]
+            
+            # Finance-specific terms
+            finance_terms = [
+                "stock", "price", "market cap", "ticker", "trading",
+                "dividend", "earnings", "revenue", "profit", "eps",
+                "pe ratio", "valuation"
+            ]
+            
+            # Document-specific terms
+            doc_terms = [
+                "document", "pdf", "report", "filing", "historical",
+                "past", "previous", "old", "archive", "documentation",
+                "manual", "guide", "presentation"
+            ]
+            
+            # Company and sector terms (these could trigger web or finance depending on context)
+            company_terms = [
+                "nvidia", "apple", "microsoft", "amd", "intel",
+                "semiconductor", "chip", "tech", "technology",
+                "ai", "artificial intelligence"
+            ]
+            
+            # First, check for explicit agent indicators
+            if any(term in query_lower for term in web_terms):
+                if any(term in query_lower for term in finance_terms):
+                    return ["web", "finance"]
+                return ["web"]
+                
+            if any(term in query_lower for term in finance_terms):
+                if any(term in query_lower for term in web_terms):
+                    return ["finance", "web"]
+                return ["finance"]
+                
+            if any(term in query_lower for term in doc_terms):
+                return ["pdf"]
+                
+            # If query contains company/sector terms but no specific agent indicators,
+            # default to web for real-time information
+            if any(term in query_lower for term in company_terms):
+                return ["web"]
+                
+            # Use LLM for complex queries
             analysis_prompt = self.prompt.format(
                 query=query,
                 available_agents=self.registry.list_agents()
             )
             response = self.llm.invoke(analysis_prompt)
             
-            # Smart fallback based on query content
-            if any(term in query.lower() for term in ["stock", "price", "market", "ticker", "ratio"]):
-                return ["finance"]
-            return ["pdf"]
-            
+            if "REQUIRED_AGENTS:" in response:
+                agents_str = response.split("REQUIRED_AGENTS:")[1].split("\n")[0]
+                agents = [a.strip() for a in agents_str.strip("[]").split(",")]
+                return [a for a in agents if a in self.registry.list_agents()]
+                
+            # Default to web for general queries about current events/information
+            return ["web"]
+                
         except Exception as e:
-            # Simple fallback
-            if any(term in query.lower() for term in ["stock", "price", "market", "ticker", "ratio"]):
-                return ["finance"]
-            return ["pdf"]
+            # Smart fallback - prefer web for general queries
+            return ["web"]
         
     def _synthesize_responses(self, query: str, responses: List[dict]) -> str:
         """Combine responses from multiple agents into coherent answer"""
