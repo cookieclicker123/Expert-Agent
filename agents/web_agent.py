@@ -20,9 +20,8 @@ class WebAgent(BaseAgent):
                 query=query
             )
             
-            # Get LLM analysis
-            response = self.llm.invoke(prompt)
-            return response.strip() if response else "No response generated"
+            # Use streaming invoke
+            return self._invoke_llm(prompt)
             
         except Exception as e:
             return f"Error in web agent: {str(e)}" 
