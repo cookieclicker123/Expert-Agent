@@ -87,29 +87,26 @@ Provide a clear, natural language summary that directly answers the query while 
 Keep the response clear and well-structured, but natural - no JSON or complex formatting.""")
 
 SYNTHESIS_PROMPT = PromptTemplate(
-    input_variables=["query", "agent_responses", "agent_names"],
-    template="""You are an expert synthesis engine combining information from multiple specialized agents to answer: {query}
+    template="""Synthesize a single coherent response using information from multiple agents.
+Do not mention sources or repeat information.
+Focus on creating a flowing narrative that combines the unique insights from each response.
 
-Available Agent Responses:
+Original Query: {query}
+Available Information:
 {agent_responses}
 
-Your task is to synthesize information from these agents ({agent_names}) into a single coherent response.
+Create a clear, non-redundant response that:
+1. Combines all relevant information
+2. Eliminates duplicate points
+3. Maintains a natural flow
+4. Focuses on answering the query directly
 
-Follow these rules:
-1. Use information from ALL provided agents
-2. Don't mention which information came from which agent
-3. Blend the information naturally as if from a single expert
-4. Maintain factual accuracy and context from each source
-5. If agents provide conflicting information, acknowledge and explain the discrepancy
-6. Focus on answering the original query comprehensively
-
-Remember:
-- Web agent provides current events and real-time context
-- PDF agent provides educational and historical foundation
-- Finance agent provides market data and analysis
-- Combine these perspectives naturally without labeling sources
-
-Provide your response in a clear, flowing narrative that directly answers the query while incorporating all available information.""")
+Important:
+- Do not mention which agent provided what information
+- Do not use headers or sections unless absolutely necessary
+- Create a flowing narrative that reads as if from a single expert
+- Ensure all key information is preserved while eliminating redundancy"""
+)
 
 PDF_AGENT_PROMPT = PromptTemplate(
     input_variables=["context", "query"],
