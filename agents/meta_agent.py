@@ -20,21 +20,33 @@ class MetaAgent(BaseAgent):
             self._stream_output("\nUsing agents: " + ", ".join(required_agents) + "\n\n")
             
             responses = []
+            accumulated_text = ""
+            
             for agent_name in required_agents:
                 agent = self.registry.get_agent(agent_name)
                 if agent:
                     if len(required_agents) > 1:
-                        self._stream_output(f"[{agent_name.upper()} AGENT]\n")
+                        header = f"[{agent_name.upper()} AGENT]\n"
+                        self._stream_output(header)
+                        accumulated_text += header
+                    
                     response = agent.process(query)
                     responses.append({"agent": agent_name, "response": response})
+                    
                     if len(required_agents) > 1:
                         self._stream_output("\n")
+                        accumulated_text += "\n"
+                    
+                    accumulated_text += response + "\n"
             
             if len(responses) == 1:
                 return responses[0]["response"]
                 
-            return self._synthesize_responses(query, responses)
-            
+            # Now synthesize with the accumulated text
+            synthesis = self._synthesize_responses(query, responses)
+            self._stream_output("\n[SYNTHESIS]\n" + synthesis)
+            return synthesis
+                
         except Exception as e:
             return json.dumps({
                 "error": {
@@ -81,7 +93,7 @@ class MetaAgent(BaseAgent):
                 
             if any(term in query_lower for term in current_terms):
                 return ["web"]  # Pure current events query
-                
+            
             # Use LLM for complex queries
             analysis_prompt = self.prompt.format(
                 query=query,
@@ -89,15 +101,19 @@ class MetaAgent(BaseAgent):
             )
             response = self.llm.invoke(analysis_prompt)
             
+            # Extract agents from response
             if "REQUIRED_AGENTS:" in response:
-                agents_str = response.split("REQUIRED_AGENTS:")[1].split("\n")[0]
-                agents = [a.strip() for a in agents_str.strip("[]").split(",")]
-                return [a for a in agents if a in self.registry.list_agents()]
-                
+                agents_section = response.split("REQUIRED_AGENTS:")[1].split("REASON:")[0].strip()
+                agents = [a.strip() for a in agents_section.split("\n") if a.strip()]
+                valid_agents = [a for a in agents if a in self.registry.list_agents()]
+                if valid_agents:
+                    return valid_agents
+            
             # Default to PDF for general knowledge queries
             return ["pdf"]
                 
         except Exception as e:
+            print(f"Error in analyze_query: {str(e)}")
             # Smart fallback - prefer PDF for educational content
             if any(term in query_lower for term in knowledge_terms):
                 return ["pdf"]
@@ -105,12 +121,45 @@ class MetaAgent(BaseAgent):
         
     def _synthesize_responses(self, query: str, responses: List[dict]) -> str:
         """Combine responses from multiple agents into coherent answer"""
-        if not responses:
-            return json.dumps({"error": "No agent responses to synthesize"})
+        try:
+            # Validate responses
+            valid_responses = []
+            agent_names = []
             
-        synthesis_prompt = self.synthesis_prompt.format(
-            query=query,
-            agent_responses=json.dumps(responses, indent=2)
-        )
+            for response in responses:
+                if not response["response"] or "error" in response["response"].lower():
+                    continue
+                    
+                valid_responses.append(response)
+                agent_names.append(response["agent"])
+                
+            if not valid_responses:
+                return json.dumps({"error": "No valid responses to synthesize"})
+                
+            if len(valid_responses) == 1:
+                return valid_responses[0]["response"]
+                
+            # Format responses for better LLM processing
+            formatted_responses = []
+            for r in valid_responses:
+                formatted_responses.append(f"""
+    [{r['agent'].upper()} AGENT RESPONSE]
+    {r['response']}
+    """)
+                
+            synthesis_prompt = self.synthesis_prompt.format(
+                query=query,
+                agent_responses="\n".join(formatted_responses),
+                agent_names=", ".join(agent_names)
+            )
 
-        return self.llm.invoke(synthesis_prompt) 
+            # Use streaming for synthesis
+            return self._invoke_llm(synthesis_prompt)
+                
+        except Exception as e:
+            return json.dumps({
+                "error": {
+                    "message": f"Synthesis failed: {str(e)}",
+                    "agent": "meta"
+                }
+            }, indent=2)

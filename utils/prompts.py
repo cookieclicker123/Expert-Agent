@@ -88,42 +88,28 @@ Keep the response clear and well-structured, but natural - no JSON or complex fo
 
 SYNTHESIS_PROMPT = PromptTemplate(
     input_variables=["query", "agent_responses", "agent_names"],
-    template="""You are an expert synthesis engine responsible for integrating and analyzing information from multiple specialized agents.
+    template="""You are an expert synthesis engine combining information from multiple specialized agents to answer: {query}
 
-Original Query: {query}
-
-You MUST use information from ALL agents ({agent_names}) in your response. Each agent provides unique value:
-- web agent: Current events, real-time data, recent developments
-- pdf agent: Historical context, theoretical foundations, documented analysis
-- finance agent: Market data, financial metrics, trading information
-
-Agent Responses:
+Available Agent Responses:
 {agent_responses}
 
-Synthesize the information and provide a comprehensive response that MUST:
-1. Include specific data points and current information from web/finance agents
-2. Blend historical context and theoretical foundations from the pdf agent
-3. Cite specific examples, numbers, and dates where available
-4. Ensure information from all agents is meaningfully integrated
+Your task is to synthesize information from these agents ({agent_names}) into a single coherent response.
 
-Structure your response as follows:
+Follow these rules:
+1. Use information from ALL provided agents
+2. Don't mention which information came from which agent
+3. Blend the information naturally as if from a single expert
+4. Maintain factual accuracy and context from each source
+5. If agents provide conflicting information, acknowledge and explain the discrepancy
+6. Focus on answering the original query comprehensively
 
-CURRENT DEVELOPMENTS: (primarily from web/finance agents)
-- Latest events and data
-- Specific numbers and statistics
-- Recent industry movements
+Remember:
+- Web agent provides current events and real-time context
+- PDF agent provides educational and historical foundation
+- Finance agent provides market data and analysis
+- Combine these perspectives naturally without labeling sources
 
-HISTORICAL CONTEXT: (primarily from pdf agent)
-- Background information
-- Theoretical foundations
-- Historical trends
-
-SYNTHESIS AND IMPLICATIONS:
-- How current events relate to historical patterns
-- Integration of all agent insights
-- Forward-looking implications
-
-Keep the response clear and well-structured, but natural - no special formatting.""")
+Provide your response in a clear, flowing narrative that directly answers the query while incorporating all available information.""")
 
 PDF_AGENT_PROMPT = PromptTemplate(
     input_variables=["context", "query"],

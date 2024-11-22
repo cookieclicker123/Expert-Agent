@@ -9,6 +9,7 @@ class BaseAgent(ABC):
         self.name = name
         self.streaming_handler = StreamingHandler()
         self.llm = self._initialize_llm()
+        self.accumulated_text = ""
         
     def _initialize_llm(self) -> OllamaLLM:
         """Initialize LLM with streaming callback"""
@@ -20,17 +21,27 @@ class BaseAgent(ABC):
         )
     
     def _stream_output(self, text: str, end: str = ""):
-        """Stream output to console"""
+        """Stream output to console and accumulate"""
         sys.stdout.write(text)
         if end:
             sys.stdout.write(end)
         sys.stdout.flush()
+        self.accumulated_text += text + end
     
     def _invoke_llm(self, prompt: str) -> str:
         """Invoke LLM with streaming"""
-        self.streaming_handler.text = ""  # Reset stored text
-        response = self.llm.invoke(prompt)
-        return self.streaming_handler.text  # Return accumulated text
+        try:
+            self.streaming_handler.text = ""
+            self.accumulated_text = ""
+            
+            response = self.llm.invoke(prompt)
+            
+            return self.streaming_handler.text
+            
+        except Exception as e:
+            error_msg = f"Error in {self.name} agent: {str(e)}"
+            self._stream_output(error_msg + "\n")
+            return error_msg
     
     @abstractmethod
     def process(self, query: str) -> str:
