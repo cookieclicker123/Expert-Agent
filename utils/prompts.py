@@ -87,35 +87,43 @@ Provide a clear, natural language summary that directly answers the query while 
 Keep the response clear and well-structured, but natural - no JSON or complex formatting.""")
 
 SYNTHESIS_PROMPT = PromptTemplate(
-    input_variables=["query", "agent_responses"],
+    input_variables=["query", "agent_responses", "agent_names"],
     template="""You are an expert synthesis engine responsible for integrating and analyzing information from multiple specialized agents.
 
 Original Query: {query}
 
+You MUST use information from ALL agents ({agent_names}) in your response. Each agent provides unique value:
+- web agent: Current events, real-time data, recent developments
+- pdf agent: Historical context, theoretical foundations, documented analysis
+- finance agent: Market data, financial metrics, trading information
+
 Agent Responses:
 {agent_responses}
 
-Synthesize the information and provide a comprehensive response following this structure:
+Synthesize the information and provide a comprehensive response that MUST:
+1. Include specific data points and current information from web/finance agents
+2. Blend historical context and theoretical foundations from the pdf agent
+3. Cite specific examples, numbers, and dates where available
+4. Ensure information from all agents is meaningfully integrated
 
-INTEGRATION ANALYSIS:
-- Common Themes: Patterns across responses
-- Contradictions: Any conflicting information
-- Supporting Evidence: Where responses reinforce each other
+Structure your response as follows:
 
-INSIGHTS:
-- Primary Conclusions: Main takeaways
-- Secondary Effects: Broader implications
-- Emerging Patterns: Trends or relationships discovered
+CURRENT DEVELOPMENTS: (primarily from web/finance agents)
+- Latest events and data
+- Specific numbers and statistics
+- Recent industry movements
 
-CONFIDENCE ASSESSMENT:
-- Evidence Strength: How well-supported are the conclusions
-- Information Gaps: What's missing or uncertain
-- Reliability Factors: What affects confidence levels
+HISTORICAL CONTEXT: (primarily from pdf agent)
+- Background information
+- Theoretical foundations
+- Historical trends
 
-FINAL RESPONSE:
-Provide a clear, natural language summary that directly answers the original query while incorporating insights from all agents.
+SYNTHESIS AND IMPLICATIONS:
+- How current events relate to historical patterns
+- Integration of all agent insights
+- Forward-looking implications
 
-Keep the response clear and well-structured, but natural - no JSON or complex formatting.""")
+Keep the response clear and well-structured, but natural - no special formatting.""")
 
 PDF_AGENT_PROMPT = PromptTemplate(
     input_variables=["context", "query"],
