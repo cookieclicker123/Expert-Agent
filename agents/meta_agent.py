@@ -17,12 +17,18 @@ class MetaAgent(BaseAgent):
             required_agents = self._analyze_query(query)
             required_agents = list(dict.fromkeys(required_agents))
             
+            self._stream_output("\nUsing agents: " + ", ".join(required_agents) + "\n\n")
+            
             responses = []
             for agent_name in required_agents:
                 agent = self.registry.get_agent(agent_name)
                 if agent:
+                    if len(required_agents) > 1:
+                        self._stream_output(f"[{agent_name.upper()} AGENT]\n")
                     response = agent.process(query)
                     responses.append({"agent": agent_name, "response": response})
+                    if len(required_agents) > 1:
+                        self._stream_output("\n")
             
             if len(responses) == 1:
                 return responses[0]["response"]

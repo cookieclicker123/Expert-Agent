@@ -30,8 +30,11 @@ class ExpertSystem:
     def process_query(self, query: str) -> str:
         """Process a query through the meta agent"""
         try:
-            response = self.meta_agent.process(query)
-            return self._format_response(response)
+            print("\nProcessing query...\n")
+            # The response is already streamed, so we don't need to print it again
+            self.meta_agent.process(query)
+            print("\n")  # Add spacing after response
+            return ""  # Return empty string since we've already streamed the output
         except Exception as e:
             return self._format_error(str(e))
             
@@ -70,8 +73,9 @@ def main():
                 break
                 
             response = system.process_query(query)
-            print("\nResponse:")
-            print(response)
+            if response:  # Only print if there's an error
+                print("\nResponse:")
+                print(response)
             
         except KeyboardInterrupt:
             print("\nShutting down Expert Agent System...")

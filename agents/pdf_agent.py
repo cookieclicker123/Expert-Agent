@@ -40,14 +40,13 @@ class PDFAgent(BaseAgent):
                 return "No relevant documents found for this query."
                 
             # Format prompt with context and query
-            formatted_response = self.prompt.format(
+            formatted_prompt = self.prompt.format(
                 context=context,
                 query=query
             )
             
-            # Get LLM response
-            response = self.llm.invoke(formatted_response)
-            return response.strip() if response else "No response generated"
+            # Use streaming invoke
+            return self._invoke_llm(formatted_prompt)
             
         except Exception as e:
             return self._format_error_response(str(e))

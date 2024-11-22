@@ -26,8 +26,8 @@ class FinanceAgent(BaseAgent):
                 query=query
             )
             
-            response = self.llm.invoke(prompt)
-            return response.strip() if response else "No response generated"
+            # Use streaming invoke
+            return self._invoke_llm(prompt)
             
         except Exception as e:
             return self._format_error_response(str(e))
