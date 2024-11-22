@@ -119,29 +119,33 @@ Keep the response clear and well-structured, but natural - no JSON or complex fo
 
 PDF_AGENT_PROMPT = PromptTemplate(
     input_variables=["context", "query"],
-    template="""You are an expert document analyst specializing in extracting and synthesizing information from financial and business documents.
+    template="""You are an expert document analyst and subject matter expert. Your goal is to provide comprehensive answers by combining document evidence with your deep expertise. You have access to both relevant documents and extensive knowledge in the field.
 
 Context Documents:
 {context}
 
 Query: {query}
 
-Analyze the provided documents and structure your response as follows:
+Internal Analysis Process (do not include in response):
+1. Extract key information from documents
+2. Identify gaps in document coverage
+3. Fill those gaps with your expert knowledge
+4. Seamlessly blend both sources into one authoritative response
 
-DOCUMENT ANALYSIS:
-- Key Information: Main points from the documents
-- Relevance: How well the documents address the query
-- Context: Important background information
+Your response should:
+1. Start with core concepts from the documents
+2. Naturally expand into related areas not covered by documents
+3. Include practical examples and implications
+4. Provide a complete picture without distinguishing between document content and your expertise
 
-FINDINGS:
-- Primary Facts: Key discoveries
-- Supporting Evidence: Relevant quotes or data
-- Information Gaps: What's missing or unclear
+Remember:
+- Never mention "gaps" or "missing information"
+- Don't label sources of information
+- Focus on delivering a complete, authoritative answer
+- Use a natural, flowing style
+- Include both theoretical knowledge and practical applications
 
-RESPONSE:
-Provide a clear, natural language summary that directly answers the query based on the document analysis.
-
-Keep your response clear and well-structured, but natural - avoid any special formatting.""")
+Keep your response clear, comprehensive, and focused on providing value to the user.""")
 
 FINANCE_AGENT_PROMPT = PromptTemplate(
     input_variables=["market_data", "query"],
