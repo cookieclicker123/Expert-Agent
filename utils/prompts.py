@@ -38,11 +38,16 @@ META_AGENT_PROMPT = PromptTemplate(
 
 Query: {query}
 
-First, classify the query type:
+First, classify the query type and complexity:
 1. PRICE_CHECK: Simple price or market data request
 2. EDUCATIONAL: Detailed learning or how-to request
 3. ANALYSIS: Complex market analysis request
 4. INFORMATIONAL: Basic information request
+
+Complexity Level:
+- BASIC: Simple, straightforward information
+- INTERMEDIATE: Requires some technical understanding
+- ADVANCED: Requires deep technical knowledge or multiple concepts
 
 Then, select ONLY the necessary agents:
 - pdf -> For educational/background knowledge
@@ -52,23 +57,27 @@ Then, select ONLY the necessary agents:
 Examples:
 "What's AAPL's price?" 
 -> Type: PRICE_CHECK
+-> Complexity: BASIC
 -> Agents: finance only
 
 "How do I trade options?"
 -> Type: EDUCATIONAL
--> Agents: pdf, web, finance
+-> Complexity: INTERMEDIATE
+-> Agents: pdf, web
 
-"Should I buy TSLA?"
--> Type: ANALYSIS
--> Agents: web, finance
+"Explain advanced derivatives strategies"
+-> Type: EDUCATIONAL
+-> Complexity: ADVANCED
+-> Agents: pdf, web, finance
 
 Respond with:
 QUERY_TYPE: <type>
+COMPLEXITY: <level>
 WORKFLOW:
 agent_name -> specific reason for using this agent
 (only include necessary agents)
 
-REASON: Brief explanation of workflow strategy"""
+REASON: Brief explanation of workflow strategy and required depth"""
 )
 
 WEB_AGENT_PROMPT = PromptTemplate(
@@ -111,45 +120,72 @@ CORE RULES:
 4. For multi-part questions, address each part clearly
 5. Preserve technical accuracy while maintaining readability
 6. DO NOT OMIT ANY INFORMATION
+7. AVOID repeating content between sections
+8. Each section must provide unique value
+9. When source material is limited, expand with relevant expertise
+10. Balance theoretical knowledge with practical examples
 
 For EDUCATIONAL QUERIES:
 1. Start with a clear, concise definition
 2. Break down complex concepts into digestible parts
 3. Progress from basic to advanced concepts
 4. Include:
-   - Core concepts and terminology
-   - Common strategies and their use cases
-   - Risk management principles
-   - Practical implementation steps
-   - Tools and platforms needed
-   - Learning progression path
-   - Common pitfalls to avoid
-   - Advanced concepts for further study
+   - Core concepts and terminology with specific examples
+   - Common strategies with numerical examples
+   - Risk management principles with specific metrics
+   - Practical implementation steps with tool-specific details
+   - Tools and platforms with feature comparisons
+   - Learning progression path with timeframes
+   - Common pitfalls with real scenarios
+   - Advanced concepts with technical specifications
+
+TECHNICAL CONTENT REQUIREMENTS:
+1. Include specific measurements and calculations
+2. Provide concrete examples with numbers
+3. Reference specific tools and their features
+4. Include failure scenarios and edge cases
+5. Add market context when relevant
+6. Specify exact conditions for pattern validity
+7. Include probability of success/failure rates when available
+
+SOURCE INTEGRATION:
+1. When PDF content is limited:
+   - Expand with web knowledge
+   - Add practical examples
+   - Include current market context
+2. When technical details are missing:
+   - Provide specific examples
+   - Include calculations
+   - Reference industry standards
+3. Balance theoretical knowledge with practical application
 
 RESPONSE STRUCTURE:
 1. Opening Definition/Overview
-2. Core Concepts (with examples)
+2. Core Concepts (with specific examples)
 3. Practical Implementation
-   - Prerequisites
-   - Step-by-step process
-   - Tools and platforms
+   - Prerequisites with specific requirements
+   - Step-by-step process with exact parameters
+   - Tools and platforms with feature comparison
 4. Risk Management
+   - Specific metrics and thresholds
+   - Real-world examples
 5. Learning Path
-   - Beginning steps
-   - Intermediate concepts
-   - Advanced strategies
+   - Beginning steps with timeframes
+   - Intermediate concepts with prerequisites
+   - Advanced strategies with complexity warnings
 6. Action Items
-   - Immediate next steps
-   - Resources to use
-   - Common pitfalls to avoid
+   - Specific, non-repeated next steps
+   - Concrete resource recommendations
+   - Quantifiable goals and metrics
 
 Remember to:
-- Maintain technical accuracy
-- Use clear examples
-- Provide actionable steps
-- Include specific tools/platforms
+- Maintain technical accuracy with specific numbers
+- Use clear examples with calculations
+- Provide actionable steps with measurable outcomes
+- Include specific tools/platforms with feature details
 - Address all parts of multi-part queries
 - Progress logically from basics to advanced
+- Avoid repeating information between sections
 
 Create a focused response that thoroughly answers all aspects of the query while maintaining a clear narrative flow.""")
 
