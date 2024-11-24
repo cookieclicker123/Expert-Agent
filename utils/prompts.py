@@ -33,30 +33,42 @@ Keep the response clear and direct - no explanations needed.""")
 
 META_AGENT_PROMPT = PromptTemplate(
     input_variables=["query", "available_agents"],
-    template="""Analyze this query and build a workflow using available agents:
+    template="""Analyze this query and determine the minimal necessary agents needed:
 {available_agents}
 
 Query: {query}
 
-Determine:
-1. Required information types
-2. Dependencies between information needs
-3. Optimal order of operations
-4. How information should flow between agents
+First, classify the query type:
+1. PRICE_CHECK: Simple price or market data request
+2. EDUCATIONAL: Detailed learning or how-to request
+3. ANALYSIS: Complex market analysis request
+4. INFORMATIONAL: Basic information request
 
-Respond with a workflow where each step is in format:
+Then, select ONLY the necessary agents:
+- pdf -> For educational/background knowledge
+- web -> For current context/news
+- finance -> For market data/prices
+
+Examples:
+"What's AAPL's price?" 
+-> Type: PRICE_CHECK
+-> Agents: finance only
+
+"How do I trade options?"
+-> Type: EDUCATIONAL
+-> Agents: pdf, web, finance
+
+"Should I buy TSLA?"
+-> Type: ANALYSIS
+-> Agents: web, finance
+
+Respond with:
+QUERY_TYPE: <type>
 WORKFLOW:
-agent_name -> reason for using this agent
-next_agent -> reason for using this agent
-...
+agent_name -> specific reason for using this agent
+(only include necessary agents)
 
-Example:
-WORKFLOW:
-pdf -> gather background knowledge
-web -> get current context
-finance -> verify market data
-
-REASON: Brief explanation of overall workflow strategy"""
+REASON: Brief explanation of workflow strategy"""
 )
 
 WEB_AGENT_PROMPT = PromptTemplate(
@@ -87,27 +99,59 @@ Keep the response clear and well-structured, but natural - no JSON or complex fo
 
 SYNTHESIS_PROMPT = PromptTemplate(
     input_variables=["query", "agent_responses"],
-    template="""Create a comprehensive, actionable response that answers: {query}
+    template="""Create a comprehensive response using the provided agent information.
 
-Available Information:
-{agent_responses}
+Query: {query}
+Information: {agent_responses}
 
-Guidelines for synthesis:
-1. Start with immediate, actionable steps
-2. Follow with supporting knowledge
-3. Include specific examples and requirements
-4. Address common beginner questions
-5. End with next steps and resources
+CORE RULES:
+1. NEVER mention sources or analysis methods
+2. ALWAYS provide direct, actionable information
+3. SYNTHESIZE information from all agents into a cohesive narrative
+4. For multi-part questions, address each part clearly
+5. Preserve technical accuracy while maintaining readability
+6. DO NOT OMIT ANY INFORMATION
 
-Focus on:
-- Practical "How To" steps first
-- Prerequisites and requirements
-- Specific platforms or tools needed
-- Common pitfalls to avoid
-- Clear next actions
+For EDUCATIONAL QUERIES:
+1. Start with a clear, concise definition
+2. Break down complex concepts into digestible parts
+3. Progress from basic to advanced concepts
+4. Include:
+   - Core concepts and terminology
+   - Common strategies and their use cases
+   - Risk management principles
+   - Practical implementation steps
+   - Tools and platforms needed
+   - Learning progression path
+   - Common pitfalls to avoid
+   - Advanced concepts for further study
 
-Create a flowing narrative that provides a complete answer to the query."""
-)
+RESPONSE STRUCTURE:
+1. Opening Definition/Overview
+2. Core Concepts (with examples)
+3. Practical Implementation
+   - Prerequisites
+   - Step-by-step process
+   - Tools and platforms
+4. Risk Management
+5. Learning Path
+   - Beginning steps
+   - Intermediate concepts
+   - Advanced strategies
+6. Action Items
+   - Immediate next steps
+   - Resources to use
+   - Common pitfalls to avoid
+
+Remember to:
+- Maintain technical accuracy
+- Use clear examples
+- Provide actionable steps
+- Include specific tools/platforms
+- Address all parts of multi-part queries
+- Progress logically from basics to advanced
+
+Create a focused response that thoroughly answers all aspects of the query while maintaining a clear narrative flow.""")
 
 PDF_AGENT_PROMPT = PromptTemplate(
     input_variables=["context", "query"],

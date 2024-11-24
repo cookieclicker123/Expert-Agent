@@ -10,6 +10,13 @@ class ModelConfig:
     model_name: str = "llama3.2"
     temperature: float = 0.7
     max_tokens: int = 3000
+    provider: str = "ollama"
+
+    groq_api_key: str = os.getenv("GROQ_API_KEY")
+    groq_model_name: str = "llama-3.2-90b-text-preview"
+
+    local_display_name: str = "Local (Ollama LLaMA 3.2)"
+    groq_display_name: str = "Groq (LLaMA 3.2 90B)"
 
 @dataclass
 class APIConfig:

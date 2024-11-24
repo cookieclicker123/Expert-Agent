@@ -14,42 +14,46 @@ class MetaAgent(BaseAgent):
         self.workpad = Workpad()
         
     def process(self, query: str) -> str:
+        """Process query through appropriate agents"""
         try:
-            print("\nProcessing query...")
-            
-            # Silent workflow analysis
-            workflow = self._analyze_workflow(query)
-            
             print("\nAnalyzing workflow...")
-            for step in workflow:
-                print(f"- {step['agent']}: {step['reason']}")
+            
+            # Get required agents
+            required_agents = self._analyze_query(query)
+            
+            print("Selected agents:")
+            for agent in required_agents:
+                print(f"- {agent}: {self.registry.get_agent_purpose(agent)}")
             
             print("\nGathering information...")
             
-            # Execute agents silently
+            # Clear workpad for new query
             self.workpad.clear()
-            for step in workflow:
-                agent = self.registry.get_agent(step["agent"])
+            
+            # Process agents and save to workpad
+            for agent_name in required_agents:
+                agent = self.registry.get_agent(agent_name)
                 if agent:
-                    result = agent._invoke_llm(agent.process(query), stream=False)
-                    if result and "error" not in str(result).lower():
-                        self.workpad.write(
-                            agent=step["agent"],
-                            content=result
-                        )
+                    print(f"\nProcessing {agent_name} agent...")
+                    response = agent.process(query)
+                    print(f"Got response from {agent_name}: {response[:100]}...")
+                    # Save to workpad using write method
+                    self.workpad.write(agent_name, response)
             
-            print("\nSynthesizing response...\n")
+            print("\nSynthesizing response...")
             
-            # Only stream the synthesis
-            return self._invoke_llm(self._synthesize_from_workpad(query), stream=True)
+            # Debug: Print workpad content
+            content = self.workpad.get_all_content()
+            print(f"\nWorkpad content: {content}")
+            
+            final_response = self._synthesize_from_workpad(query)
+            print(f"\nFinal response: {final_response}")
+            
+            return final_response
             
         except Exception as e:
-            return json.dumps({
-                "error": {
-                    "message": str(e),
-                    "agent": "meta"
-                }
-            }, indent=2)
+            print(f"Error in workflow: {str(e)}")
+            return str(e)
 
     def _synthesize_from_workpad(self, query: str) -> str:
         """Synthesize final response from workpad content"""
@@ -115,3 +119,27 @@ Information from {agent}:
         except Exception as e:
             print(f"Workflow analysis failed: {str(e)}")
             return [{"agent": "web", "reason": "error fallback"}]
+
+    def _analyze_query(self, query: str) -> List[str]:
+        """Extract required agents from workflow analysis"""
+        try:
+            # Get workflow steps
+            workflow = self._analyze_workflow(query)
+            
+            # Extract unique agent names from workflow
+            required_agents = []
+            for step in workflow:
+                agent = step.get("agent")
+                if agent and agent not in required_agents:
+                    required_agents.append(agent)
+            
+            # Print workflow analysis
+            print("Workflow analysis...")
+            for step in workflow:
+                print(f"- {step['agent']}: {step['reason']}")
+            
+            return required_agents
+            
+        except Exception as e:
+            print(f"Analysis failed: {str(e)}")
+            return ["web"]  # Fallback to web agent
