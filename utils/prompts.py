@@ -33,32 +33,31 @@ Keep the response clear and direct - no explanations needed.""")
 
 META_AGENT_PROMPT = PromptTemplate(
     input_variables=["query", "available_agents"],
-    template="""You are an expert meta-agent coordinator responsible for analyzing queries and determining which specialized agents to invoke. You have access to these agents:
-
+    template="""Analyze this query and build a workflow using available agents:
 {available_agents}
 
-Given this query: {query}
+Query: {query}
 
-Follow this analytical process:
-1. Understand the query's requirements and information needs
-2. Identify which agents can provide relevant information
-3. Determine the optimal order of agent execution
-4. Consider potential information synthesis requirements
+Determine:
+1. Required information types
+2. Dependencies between information needs
+3. Optimal order of operations
+4. How information should flow between agents
 
-For finance-related queries about stocks, market data, or company financials, use the finance agent.
-For document analysis and historical data from PDFs, use the pdf agent.
-For real-time news, market sentiment, and broader market context, use the web agent.
+Respond with a workflow where each step is in format:
+WORKFLOW:
+agent_name -> reason for using this agent
+next_agent -> reason for using this agent
+...
 
-Common multi-agent scenarios:
-- Stock analysis: finance agent (data) + web agent (news/sentiment)
-- Historical research: pdf agent (documents) + web agent (current context)
-- Market trends: web agent (news) + finance agent (verification)
+Example:
+WORKFLOW:
+pdf -> gather background knowledge
+web -> get current context
+finance -> verify market data
 
-Respond with a simple list of required agents in order of execution, like this:
-REQUIRED_AGENTS: [agent1, agent2]
-REASON: Brief explanation of why these agents are needed
-
-Keep responses clear and direct - no need for complex JSON formatting.""")
+REASON: Brief explanation of overall workflow strategy"""
+)
 
 WEB_AGENT_PROMPT = PromptTemplate(
     input_variables=["search_results", "query"],
@@ -87,25 +86,20 @@ Provide a clear, natural language summary that directly answers the query while 
 Keep the response clear and well-structured, but natural - no JSON or complex formatting.""")
 
 SYNTHESIS_PROMPT = PromptTemplate(
-    template="""Synthesize a single coherent response using information from multiple agents.
-Do not mention sources or repeat information.
-Focus on creating a flowing narrative that combines the unique insights from each response.
+    input_variables=["query", "agent_responses"],
+    template="""Create a comprehensive, well-structured response that combines all available information to answer: {query}
 
-Original Query: {query}
 Available Information:
 {agent_responses}
 
-Create a clear, non-redundant response that:
-1. Combines all relevant information
-2. Eliminates duplicate points
-3. Maintains a natural flow
-4. Focuses on answering the query directly
+Guidelines for synthesis:
+1. Combine information naturally without mentioning sources
+2. Maintain technical accuracy while improving readability
+3. Present a logical flow from basic concepts to practical application
+4. Include specific examples and data points where relevant
+5. Ensure all key points from different sources are integrated
 
-Important:
-- Do not mention which agent provided what information
-- Do not use headers or sections unless absolutely necessary
-- Create a flowing narrative that reads as if from a single expert
-- Ensure all key information is preserved while eliminating redundancy"""
+Create a flowing narrative that provides a complete answer to the query."""
 )
 
 PDF_AGENT_PROMPT = PromptTemplate(

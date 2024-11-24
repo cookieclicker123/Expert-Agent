@@ -3,6 +3,7 @@ import json
 from agents.base_agent import BaseAgent
 from agents.registry import AgentRegistry
 from utils.prompts import META_AGENT_PROMPT, SYNTHESIS_PROMPT
+from utils.workpad import Workpad
 
 class MetaAgent(BaseAgent):
     def __init__(self):
@@ -10,41 +11,30 @@ class MetaAgent(BaseAgent):
         self.registry = AgentRegistry()
         self.prompt = META_AGENT_PROMPT
         self.synthesis_prompt = SYNTHESIS_PROMPT
+        self.workpad = Workpad()
         
     def process(self, query: str) -> str:
-        """Process query and delegate to appropriate agents"""
         try:
-            required_agents = self._analyze_query(query)
-            required_agents = list(dict.fromkeys(required_agents))
+            print("\nProcessing query...")
             
-            # Only show agents being used if more than one
-            if len(required_agents) > 1:
-                self._stream_output("\nUsing agents: " + ", ".join(required_agents) + "\n\n")
+            # Get workflow analysis
+            workflow = self._analyze_workflow(query)
             
-            responses = []
-            for agent_name in required_agents:
-                agent = self.registry.get_agent(agent_name)
+            # Execute agents
+            self.workpad.clear()
+            for step in workflow:
+                agent = self.registry.get_agent(step["agent"])
                 if agent:
-                    response = agent.process(query)
-                    if response and "error" not in response.lower():
-                        responses.append({"agent": agent_name, "response": response})
+                    result = agent.process(query)
+                    if result and "error" not in str(result).lower():
+                        self.workpad.write(
+                            agent=step["agent"],
+                            content=result
+                        )
             
-            # For single agent, return direct response
-            if len(responses) == 1:
-                return responses[0]["response"]
+            # Get synthesis
+            return self._synthesize_from_workpad(query)
             
-            # For multiple agents, synthesize and return
-            if len(responses) > 1:
-                synthesis = self._synthesize_responses(query, responses)
-                return synthesis
-                
-            return json.dumps({
-                "error": {
-                    "message": "No valid responses received from agents",
-                    "agent": "meta"
-                }
-            }, indent=2)
-                
         except Exception as e:
             return json.dumps({
                 "error": {
@@ -52,69 +42,68 @@ class MetaAgent(BaseAgent):
                     "agent": "meta"
                 }
             }, indent=2)
-        
-    def _analyze_query(self, query: str) -> List[str]:
-        """Determine which agents are needed for this query"""
+
+    def _synthesize_from_workpad(self, query: str) -> str:
+        """Synthesize final response from workpad content"""
         try:
-            query_lower = query.lower()
-            
-            # Educational/Knowledge terms (PDF priority)
-            knowledge_terms = [
-                "how to", "explain", "what is", "strategy", "guide",
-                "tutorial", "understand", "learn", "concept", "theory",
-                "principle", "method", "technique", "approach", "framework",
-                "process", "steps", "advanced", "basic", "intermediate"
-            ]
-            
-            # Current events terms (Web priority)
-            current_terms = [
-                "latest", "current", "now", "today", "recent",
-                "breaking", "update", "news", "announced", "happening"
-            ]
-            
-            # Market data terms (Finance priority)
-            market_terms = [
-                "price", "stock", "ticker", "trading", "market cap",
-                "volume", "dividend", "earnings", "ratio"
-            ]
-            
-            # First try keyword-based multi-agent scenarios
-            if any(term in query_lower for term in knowledge_terms):
-                if any(term in query_lower for term in current_terms):
-                    return ["pdf", "web"]  # Knowledge base first, then current context
-                return ["pdf"]  # Pure educational query
+            content = self.workpad.get_all_content()
+            if not content:
+                return "No valid information gathered from agents."
                 
-            if any(term in query_lower for term in market_terms):
-                if any(term in query_lower for term in current_terms):
-                    return ["finance", "web"]  # Market data first, then news
-                return ["finance"]  # Pure market query
-                
-            if any(term in query_lower for term in current_terms):
-                return ["web"]  # Pure current events query
+            # Format content for synthesis
+            formatted_content = []
+            for agent, response in content.items():
+                formatted_content.append(f"""
+Information from {agent}:
+{response}
+""")
             
-            # Then try LLM analysis for complex queries
-            try:
-                analysis_prompt = self.prompt.format(
-                    query=query,
-                    available_agents=self.registry.list_agents()
-                )
-                response = self.llm.invoke(analysis_prompt)
-                
-                if "REQUIRED_AGENTS:" in response:
-                    agents_section = response.split("REQUIRED_AGENTS:")[1].split("REASON:")[0].strip()
-                    agents = [a.strip() for a in agents_section.split("\n") if a.strip()]
-                    valid_agents = [a for a in agents if a in self.registry.list_agents()]
-                    if valid_agents:
-                        return valid_agents[:2]  # Limit to max 2 agents for better synthesis
-            except:
-                pass  # If LLM analysis fails, continue to fallback
+            # Create synthesis prompt
+            synthesis_prompt = self.synthesis_prompt.format(
+                query=query,
+                agent_responses="\n".join(formatted_content)
+            )
             
-            # Smart fallback based on query content
-            if any(term in query_lower for term in knowledge_terms):
-                return ["pdf"]
-            if any(term in query_lower for term in market_terms):
-                return ["finance"]
-            return ["web"]
-                
+            # Get synthesis
+            return self._invoke_llm(synthesis_prompt)
+            
         except Exception as e:
-            print(f"Error in analyze_query: {str(e)}")
+            return f"Synthesis failed: {str(e)}"
+        
+    def _analyze_workflow(self, query: str) -> List[dict]:
+        """Build dynamic workflow based on query analysis"""
+        try:
+            analysis_prompt = self.prompt.format(
+                query=query,
+                available_agents=self.registry.list_agents()
+            )
+            
+            # Get LLM's workflow analysis
+            response = self._invoke_llm(analysis_prompt)
+            
+            # Parse workflow steps - More robust parsing
+            workflow = []
+            if "WORKFLOW:" in response:
+                workflow_text = response.split("WORKFLOW:")[1]
+                # Handle both formats (with or without REASON:)
+                if "REASON:" in workflow_text:
+                    workflow_text = workflow_text.split("REASON:")[0]
+                
+                # Split into lines and process each
+                lines = [line.strip() for line in workflow_text.split('\n') if line.strip()]
+                for line in lines:
+                    if "->" in line:
+                        parts = line.split("->")
+                        agent = parts[0].strip()
+                        reason = parts[1].split("-")[0].strip()  # Remove any trailing comments
+                        if agent in self.registry.list_agents():
+                            workflow.append({
+                                "agent": agent,
+                                "reason": reason
+                            })
+            
+            return workflow or [{"agent": "web", "reason": "fallback"}]
+            
+        except Exception as e:
+            print(f"Workflow analysis failed: {str(e)}")
+            return [{"agent": "web", "reason": "error fallback"}]
