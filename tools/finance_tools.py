@@ -96,3 +96,15 @@ class VantageFinanceTool:
             
         except Exception as e:
             raise Exception(f"Error fetching stock data for {symbol}: {str(e)}")
+
+    def test_connection(self):
+        """Test API connectivity"""
+        try:
+            response = self.session.get(
+                self.base_url,
+                params={"function": "TIME_SERIES_INTRADAY", "symbol": "IBM", "interval": "1min", "apikey": self.api_key},
+                timeout=5
+            )
+            return response
+        except Exception as e:
+            raise Exception(f"API Connection Error: {str(e)}")

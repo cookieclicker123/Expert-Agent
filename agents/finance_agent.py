@@ -46,7 +46,7 @@ class FinanceAgent(BaseAgent):
             standalone_symbols = set(re.findall(r'\b[A-Z]{1,5}\b', query.upper()))
             potential_symbols = {s for s in standalone_symbols if s not in self.common_words}
             
-            # Step 3: If ambiguous, use LLM for validation
+            # Step 3: Use LLM for validation
             if potential_symbols:
                 llm_prompt = SYMBOL_EXTRACTION_PROMPT.format(
                     query=query,
@@ -54,16 +54,17 @@ class FinanceAgent(BaseAgent):
                 )
                 try:
                     llm_response = self.llm.invoke(llm_prompt)
-                    # Parse comma-separated list instead of JSON
                     if "VALID_SYMBOLS:" in llm_response:
                         valid_symbols_str = llm_response.split("VALID_SYMBOLS:")[1].strip()
-                        validated_symbols = [s.strip() for s in valid_symbols_str.split(",")]
+                        validated_symbols = [
+                            re.search(r'\(([A-Z]+)\)', s.strip()).group(1)
+                            for s in valid_symbols_str.split(",")
+                            if re.search(r'\(([A-Z]+)\)', s.strip())
+                        ]
                         symbols.update(validated_symbols)
-                except:
-                    # Fallback to regex results if LLM fails
+                except Exception as e:
                     symbols.update(potential_symbols)
         
-        # Final validation
         valid_symbols = [s for s in symbols if self._is_valid_symbol_format(s)]
         
         if not valid_symbols:

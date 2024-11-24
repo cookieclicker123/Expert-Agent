@@ -2,34 +2,38 @@ from langchain.prompts import PromptTemplate
 
 SYMBOL_EXTRACTION_PROMPT = PromptTemplate(
     input_variables=["query", "potential_symbols"],
-    template="""You are an expert stock market analyst. Identify which of these potential symbols are valid stock tickers based on the query context.
+    template="""You are an expert stock market analyst. Identify and standardize stock ticker symbols from the query.
 
 Query: {query}
 Potential Symbols: {potential_symbols}
 
-Consider:
-1. Context of the query
-2. Common stock symbol patterns (1-5 letters)
-3. Whether it's being used as a stock reference
-4. Symbols can be in any format: uppercase (AAPL), lowercase (aapl), or in brackets/parentheses ((AAPL))
+CRITICAL RULES:
+1. ALWAYS output symbols in parentheses format: (MSFT)
+2. Convert ANY valid ticker mention to this format:
+   - Plain text: MSFT -> (MSFT)
+   - Lowercase: msft -> (MSFT)
+   - With/without brackets: [MSFT] -> (MSFT)
+   - Already correct: (MSFT) -> (MSFT)
+
+Examples:
+Query: "How is Microsoft stock MSFT doing?"
+VALID_SYMBOLS: (MSFT)
+
+Query: "Compare msft and aapl performance"
+VALID_SYMBOLS: (MSFT), (AAPL)
+
+Query: "Analysis of (GOOGL) and [AMZN]"
+VALID_SYMBOLS: (GOOGL), (AMZN)
 
 Format your response as:
-VALID_SYMBOLS: symbol1, symbol2, ...
+VALID_SYMBOLS: (symbol1), (symbol2), ...
 
-Examples of valid responses:
-VALID_SYMBOLS: AAPL
-VALID_SYMBOLS: aapl, (MSFT), PLTR
-VALID_SYMBOLS: (tsla), NVDA
-VALID_SYMBOLS: (AMD), amzn, GOOGL
-
-Notes:
-- Return only the symbols found in the potential symbols list
-- Any case (upper/lower) is valid
-- Include brackets/parentheses if present in the original
-- Separate multiple symbols with commas
-- Do not add any additional text or formatting
-
-Keep the response clear and direct - no explanations needed.""")
+Remember:
+- ALWAYS use parentheses
+- ALWAYS uppercase symbols
+- ONLY include valid stock symbols
+- NO additional text or explanations"""
+)
 
 META_AGENT_PROMPT = PromptTemplate(
     input_variables=["query", "available_agents"],
@@ -249,3 +253,4 @@ RESPONSE:
 Provide a clear, natural language summary that directly answers the query while incorporating your analysis.
 
 Keep your response clear and well-structured, but natural - avoid any special formatting.""")
+
