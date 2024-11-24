@@ -17,23 +17,31 @@ class MetaAgent(BaseAgent):
         try:
             print("\nProcessing query...")
             
-            # Get workflow analysis
+            # Silent workflow analysis
             workflow = self._analyze_workflow(query)
             
-            # Execute agents
+            print("\nAnalyzing workflow...")
+            for step in workflow:
+                print(f"- {step['agent']}: {step['reason']}")
+            
+            print("\nGathering information...")
+            
+            # Execute agents silently
             self.workpad.clear()
             for step in workflow:
                 agent = self.registry.get_agent(step["agent"])
                 if agent:
-                    result = agent.process(query)
+                    result = agent._invoke_llm(agent.process(query), stream=False)
                     if result and "error" not in str(result).lower():
                         self.workpad.write(
                             agent=step["agent"],
                             content=result
                         )
             
-            # Get synthesis
-            return self._synthesize_from_workpad(query)
+            print("\nSynthesizing response...\n")
+            
+            # Only stream the synthesis
+            return self._invoke_llm(self._synthesize_from_workpad(query), stream=True)
             
         except Exception as e:
             return json.dumps({

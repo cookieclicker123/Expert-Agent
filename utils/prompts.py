@@ -87,17 +87,24 @@ Keep the response clear and well-structured, but natural - no JSON or complex fo
 
 SYNTHESIS_PROMPT = PromptTemplate(
     input_variables=["query", "agent_responses"],
-    template="""Create a comprehensive, well-structured response that combines all available information to answer: {query}
+    template="""Create a comprehensive, actionable response that answers: {query}
 
 Available Information:
 {agent_responses}
 
 Guidelines for synthesis:
-1. Combine information naturally without mentioning sources
-2. Maintain technical accuracy while improving readability
-3. Present a logical flow from basic concepts to practical application
-4. Include specific examples and data points where relevant
-5. Ensure all key points from different sources are integrated
+1. Start with immediate, actionable steps
+2. Follow with supporting knowledge
+3. Include specific examples and requirements
+4. Address common beginner questions
+5. End with next steps and resources
+
+Focus on:
+- Practical "How To" steps first
+- Prerequisites and requirements
+- Specific platforms or tools needed
+- Common pitfalls to avoid
+- Clear next actions
 
 Create a flowing narrative that provides a complete answer to the query."""
 )
