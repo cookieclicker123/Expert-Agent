@@ -1,15 +1,123 @@
 # Expert Financial Advisory System with Multi-Agent Architecture
 
+![GitHub](https://img.shields.io/github/license/cookieclicker123/Expert-Agent)
+![Python](https://img.shields.io/badge/python-3.11%2B-blue)
+![LLaMA](https://img.shields.io/badge/LLaMA-3.2-orange)
+![Ollama](https://img.shields.io/badge/Ollama-Latest-green)
+
 ![Ollama](images/ollama.png "Multi-Agent System Overview")
 
+## Table of Contents
+- [Overview](#overview)
+- [System Architecture](#system-architecture)
+- [Features](#features)
+- [Installation](#installation)
+- [Configuration](#configuration)
+- [Usage](#usage)
+- [Example Queries](#example-queries)
+- [Common Issues](#common-issues-and-best-practices)
+- [Contributing](#contributing)
 
+## System Architecture
+```mermaid
+graph TD
+    User[User Query] --> MetaAgent[Meta Agent]
+    
+    subgraph AgentSelection[Agent Selection & Workflow]
+        MetaAgent --> Analysis[Query Analysis]
+        Analysis --> Selection[Agent Selection]
+        Selection --> Workpad[Workpad]
+    end
+    
+    subgraph AgentProcessing[Agent Processing]
+        Workpad --> PDFAgent[PDF Agent]
+        Workpad --> WebAgent[Web Agent]
+        Workpad --> FinanceAgent[Finance Agent]
+        
+        PDFAgent --> FAISS[FAISS Index]
+        WebAgent --> Serper[Serper API]
+        FinanceAgent --> AlphaVantage[Alpha Vantage API]
+        
+        FAISS --> AgentResponse1[Agent Response]
+        Serper --> AgentResponse2[Agent Response]
+        AlphaVantage --> AgentResponse3[Agent Response]
+    end
+    
+    subgraph ResponseSynthesis[Response Synthesis]
+        AgentResponse1 --> Workpad
+        AgentResponse2 --> Workpad
+        AgentResponse3 --> Workpad
+        
+        Workpad --> SynthesisCheck{Sufficient Info?}
+        SynthesisCheck -->|Yes| FinalSynthesis[Final Synthesis]
+        SynthesisCheck -->|No| MetaAgent
+        
+        FinalSynthesis --> Response[Final Response]
+    end
+    
+    Response --> User
+    
+    style SynthesisCheck fill:#ff9900,stroke:#333,stroke-width:2px
+    style Workpad fill:#90EE90,stroke:#333,stroke-width:2px
+    style MetaAgent fill:#ADD8E6,stroke:#333,stroke-width:2px
+```
 
-This repository demonstrates a sophisticated **Multi-Agent Financial Advisory System** built on a foundation of **RAG (Retrieval-Augmented Generation)** technology. It combines:
-- Local document analysis (PDF Agent)
-- Real-time web intelligence (Web Agent)
-- Live market data processing (Finance Agent)
+The system follows a sophisticated workflow:
 
-The system leverages **LLaMA 3.2** via **Ollama** for local inference, creating a powerful, context-aware financial advisory tool that synthesizes information from multiple sources.
+1. **Query Processing**
+   - User query is received by MetaAgent
+   - MetaAgent analyzes query and selects appropriate agents
+   - Selected agents are registered in Workpad
+
+2. **Agent Execution**
+   - Each selected agent processes the query using its specialized tools:
+     - PDF Agent: FAISS vector store
+     - Web Agent: Serper API
+     - Finance Agent: Alpha Vantage API
+   - Agent responses are written to Workpad
+
+3. **Synthesis Loop**
+   - MetaAgent checks if gathered information is sufficient
+   - If YES: Proceeds to final synthesis
+   - If NO: Returns to agent selection for additional information
+   - Process repeats until sufficient information is gathered
+
+4. **Response Generation**
+   - Final synthesis combines all agent responses
+   - Coherent response delivered to user
+
+# Expert Agent System
+
+A robust, end-to-end solution for building domain-specific expert systems using LLaMA 3.2 90B or 3B locally via Ollama. The pdf knowledge base and web agent are limited in scope and can easily be expanded.
+
+## Overview
+
+This repository serves as an educational foundation for those looking to understand and build sophisticated agent-based systems. The codebase is deliberately designed to be:
+
+- **Modular**: Easy to extend and modify
+- **Generalisable**: Adaptable to any domain or purpose
+- **Educational**: Well-documented and easy to understand
+
+## Part of a Larger Series
+
+This is the first in a 4-part series exploring RAG (Retrieval-Augmented Generation) agents:
+
+1. **Basic Expert System** (This Repo)  
+   A clean, accessible implementation focusing on core concepts
+
+2. **Knowledge Graph Enhanced** (Coming Soon)  
+   Adding sophisticated node relationship pattern matching
+
+3. **Interactive Interface** (Coming Soon)  
+   Implementing a Chainlit frontend for a more engaging chat experience
+
+4. **Advanced Features** (Coming Soon)  
+   Stay tuned!
+
+## Getting Started
+
+The system is powered by LLaMA 3.2 90B via Groq or 3B locally via Ollama, offering state-of-the-art language model capabilities while maintaining a straightforward implementation.
+Compare both answers and you'll see the 90B model is faster even over an API than the 3B local model using ollama with far better answers, particularly in knowledge synthesis and staying true to the source material. We can empirically show this and therefore state knowledge synthesis is an advanced functionality and small local models arent quite up to the task yet, but are getting very close!
 
 ---
 
@@ -318,3 +426,18 @@ Comprehensive Analysis:
 - **Prompt Crafting**: Use precise and context-specific prompts to get better responses from the model.
 - **Memory Leaks**: Monitor system resources during extended use to prevent memory issues.
 - **Reuse Models**: Avoid reloading or re-initializing the model unnecessarily to improve performance.
+
+## Contributing
+
+Contributions are welcome! Please feel free to submit a Pull Request. For major changes, please open an issue first to discuss what you would like to change.
+
+## License
+
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+
+## Acknowledgments
+
+- Meta AI for LLaMA 3.2
+- Ollama team for local model serving
+- Groq for high-performance inference
+- FAISS team for vector indexing
