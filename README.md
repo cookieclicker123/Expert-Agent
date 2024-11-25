@@ -2,6 +2,8 @@
 
 ![Ollama](images/ollama.png "Multi-Agent System Overview")
 
+
+
 This repository demonstrates a sophisticated **Multi-Agent Financial Advisory System** built on a foundation of **RAG (Retrieval-Augmented Generation)** technology. It combines:
 - Local document analysis (PDF Agent)
 - Real-time web intelligence (Web Agent)
@@ -175,11 +177,20 @@ Note: Rate limits on free accounts are low (25 requests per day). Consider a pai
 
 Note: Serper offers 2,500 free searches when you sign up, which is generally sufficient for testing and personal use. For production environments, consider their paid plans for higher limits.
 
+### llama3.2 90B text preview model
+1. sign up to groq
+2. go to https://console.groq.com/keys
+3. create a new key
+4. copy the key
+
+Note: this 90B model is substantially better than the 3B model. When you run the `main.py` script, it will ask you which model to use. Choose the 90B model if you want better performance. Choose the 3B model if you want to use a truly local, private model where all you data stays on your machine. Surprisingly though, Groq is so quick that the 90B model is faster even over an API than the 3B local model using ollama!.
+
 Create a `.env` file in the root folder and add your API keys:
 
 ```bash
 ALPHA_VANTAGE_API_KEY=<your_vantage_api_key>
 SERPER_API_KEY=<your_serper_api_key>
+GROQ_API_KEY=<your_groq_api_key>
 ```
 
 ## PDF to Text Conversion
@@ -206,7 +217,7 @@ python txt_to_index.py
 
 This will create a FAISS index and save it in the `DataIndex/` folder.
 
-## Running the LLaMA 3.2 Model with Ollama
+## Running the LLaMA 3.2 3B Model with Ollama
 
 To use the LLaMA 3.2 model for question answering, you need to run Ollama with the LLaMA model. You can either directly run:
 
