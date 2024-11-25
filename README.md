@@ -269,14 +269,14 @@ Advanced:
 
 ### Finance Agent (Market Data)
 Basic:
-- "What's AAPL's current price?"
-- "Show me NVDA's performance today"
-- "Get Microsoft's market cap"
+- "What's (AAPL) current price?"
+- "Show me (NVDA) performance today"
+- "Get Microsoft's market cap (MSFT)"
 
 Advanced:
-- "Compare AAPL and MSFT's current metrics"
-- "Analyze AMD's trading volume patterns"
-- "Show Tesla's key financial ratios"
+- "Compare (AAPL) and (MSFT) current metrics"
+- "Analyze (AMD) trading volume patterns"
+- "Show (TSLA) key financial ratios"
 
 ### Multi-Agent Queries
 Knowledge + Current Events:
@@ -285,12 +285,12 @@ Knowledge + Current Events:
 - "What are the implications of recent AI developments for traditional trading strategies?"
 
 Market Data + News:
-- "Why is NVDA stock moving today?"
-- "Analyze AAPL's performance with recent supply chain news"
-- "How are analyst ratings affecting MSFT's price?"
+- "Why is (NVDA) stock moving today?"
+- "Analyze (AAPL)'s performance with recent supply chain news"
+- "How are analyst ratings affecting (MSFT)'s price?"
 
 Comprehensive Analysis:
-- "Give me a complete analysis of the AI chip market, including NVDA, AMD, and INTC"
+- "Give me a complete analysis of the AI chip market, including (NVDA), (AMD), and (INTC)"
 - "Analyze the impact of current market conditions on options trading strategies"
 - "What's driving the semiconductor sector this week? Include historical context and current data"
 

@@ -3,8 +3,8 @@ from tools.web_tools import SerperTool
 from utils.prompts import WEB_AGENT_PROMPT
 
 class WebAgent(BaseAgent):
-    def __init__(self):
-        super().__init__("web")
+    def __init__(self, callbacks=None):
+        super().__init__("web", callbacks)
         self.search_tool = SerperTool()
         self.prompt = WEB_AGENT_PROMPT
         

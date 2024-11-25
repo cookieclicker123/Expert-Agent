@@ -4,12 +4,16 @@ from agents.finance_agent import FinanceAgent
 from agents.web_agent import WebAgent
 import json
 from utils.config import Config
+from utils.callbacks import StreamingHandler
 
 class ExpertSystem:
     def __init__(self):
         print("Loading Expert System...")
-        # Initialize meta agent
-        self.meta_agent = MetaAgent()
+        # Initialize streaming handler
+        self.streaming_handler = StreamingHandler()
+        
+        # Initialize meta agent with streaming
+        self.meta_agent = MetaAgent(callbacks=[self.streaming_handler])
         
         # Initialize and register available agents
         self._initialize_agents()
@@ -17,11 +21,11 @@ class ExpertSystem:
     def _initialize_agents(self):
         """Initialize and register all available agents"""
         print("Initializing PDF agent...")
-        pdf_agent = PDFAgent()
+        pdf_agent = PDFAgent(callbacks=[self.streaming_handler])
         print("Initializing Finance agent...")
-        finance_agent = FinanceAgent()
+        finance_agent = FinanceAgent(callbacks=[self.streaming_handler])
         print("Initializing Web agent...")
-        web_agent = WebAgent()
+        web_agent = WebAgent(callbacks=[self.streaming_handler])
         
         # Register all agents
         self.meta_agent.registry.register("pdf", pdf_agent)
@@ -32,10 +36,10 @@ class ExpertSystem:
         """Process a query through the meta agent"""
         try:
             print("\nProcessing query...\n")
-            # The response is already streamed, so we don't need to print it again
-            self.meta_agent.process(query)
+            # Get the response but don't print it - streaming handler will handle that
+            response = self.meta_agent.process(query)
             print("\n")  # Add spacing after response
-            return ""  # Return empty string since we've already streamed the output
+            return ""
         except Exception as e:
             return self._format_error(str(e))
             

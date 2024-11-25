@@ -6,8 +6,8 @@ import re
 from typing import List, Set
 
 class FinanceAgent(BaseAgent):
-    def __init__(self):
-        super().__init__("finance")
+    def __init__(self, callbacks=None):
+        super().__init__("finance", callbacks)
         self.finance_tool = VantageFinanceTool()
         self.prompt = FINANCE_AGENT_PROMPT
         self.common_words = {
