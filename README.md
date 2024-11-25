@@ -308,7 +308,7 @@ To convert your PDFs into text files, run the `pdf_to_text.py` script. Make sure
 Usage:
 
 ```bash
-python pdf_to_txt.py
+python scripts/pdf_to_json.py
 ```
 
 This will convert all PDF files in the `Data/` folder and store the text files in the `DataTxt/` folder.
@@ -320,7 +320,7 @@ Run the `txt_to_index.py` script to generate the FAISS index from the text files
 Usage:
 
 ```bash
-python txt_to_index.py
+python scripts/json_to_index.py
 ```
 
 This will create a FAISS index and save it in the `DataIndex/` folder.
